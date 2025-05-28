@@ -11,12 +11,11 @@ pr:
       - main
 
 pool:
-  name: 'Default'
+  name: 'Default'  # Your self-hosted agent pool
 
 steps:
-  - checkout: self
+  - checkout: self  # ✅ This ensures the source code is pulled from GitHub
 
-steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '18.x'
