@@ -11,7 +11,7 @@ pr:
       - main
 
 pool:
-  name: 'DESKTOP-GFET4TN'
+  name: 'Default'
 
 steps:
   - task: NodeTool@0
