@@ -1,7 +1,7 @@
 - **main**: Central integration branch; used for synchronizing environments. No direct deployments are made from this branch.
 - **dev**: Developers merge feature branches here.
-- **staging/**: Receives code from `dev` after successful testing.
-- **prod/**: Stable production-ready branch. Only updated via Pull Requests from `staging`.
+- **test/**: Receives code from `dev` after successful testing.
+- **prod/**: Stable production-ready branch. Only updated via Pull Requests from `test`.
 - **feature/**: Individual developer branches for new features.
 - **hotfix/**: Urgent fixes applied directly to main.
 
