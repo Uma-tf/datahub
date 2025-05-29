@@ -18,7 +18,7 @@ stages:
   - deployment: HelmDeployDev
     environment: dev
     pool:
-      vmImage: 'Default'
+      name: 'Default'
     strategy:
       runOnce:
         deploy:
