@@ -5,10 +5,10 @@ trigger:
       - main
 
 variables:
-  imageName: 'az-nodejs-app'
+  imageName: 'acr_connect'
   dockerRegistryServiceConnection: 'AzureContainerRegistryConnection'
-  acrName: '<your-acr-name>'
-  kubernetesServiceConnection: 'AKS-Connection'
+  acrName: 'datahubtore'
+  kubernetesServiceConnection: 'aks-dev-connect'
   namespace: 'default'
 
 stages:
