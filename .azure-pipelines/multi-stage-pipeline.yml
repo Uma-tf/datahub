@@ -18,7 +18,7 @@ stages:
   - deployment: HelmDeployDev
     environment: dev
     pool:
-      name: default          # agent pool
+      name: default
     strategy:
       runOnce:
         deploy:
@@ -28,7 +28,7 @@ stages:
             inputs:
               helmVersionToInstall: 'latest'
           - task: HelmDeploy@0
-            displayName: 'Deploy via Helm'
+            displayName: 'Deploy via Helm to Dev'
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceConnection: 'aks-dev-connect'
@@ -37,8 +37,8 @@ stages:
               chartType: 'FilePath'
               chartPath: 'charts/your-app'
               releaseName: 'az-node-dev'
-              overrideValues: '-f .azure-pipelines/helm-values/dev-values.yaml'
               install: true
+              valueFile: '.azure-pipelines/helm-values/dev-values.yaml'
 
 - stage: DeployTest
   displayName: Deploy to Test
@@ -58,7 +58,7 @@ stages:
             inputs:
               helmVersionToInstall: 'latest'
           - task: HelmDeploy@0
-            displayName: 'Deploy via Helm'
+            displayName: 'Deploy via Helm to Test'
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceConnection: 'aks-dev-connect'
@@ -67,8 +67,8 @@ stages:
               chartType: 'FilePath'
               chartPath: 'charts/your-app'
               releaseName: 'az-node-test'
-              overrideValues: '-f .azure-pipelines/helm-values/test-values.yaml'
               install: true
+              valueFile: '.azure-pipelines/helm-values/test-values.yaml'
 
 - stage: DeployProd
   displayName: Deploy to Prod
@@ -76,7 +76,7 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: HelmDeployProd
-    environment: prod    # approvals
+    environment: prod    
     pool:
       name: default
     strategy:
@@ -88,7 +88,7 @@ stages:
             inputs:
               helmVersionToInstall: 'latest'
           - task: HelmDeploy@0
-            displayName: 'Deploy via Helm'
+            displayName: 'Deploy via Helm to Prod'
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceConnection: 'aks-dev-connect'
@@ -97,5 +97,5 @@ stages:
               chartType: 'FilePath'
               chartPath: 'charts/your-app'
               releaseName: 'az-node-prod'
-              overrideValues: '-f .azure-pipelines/helm-values/prod-values.yaml'
               install: true
+              valueFile: '.azure-pipelines/helm-values/prod-values.yaml'
