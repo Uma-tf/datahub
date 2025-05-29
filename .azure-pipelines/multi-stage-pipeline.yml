@@ -1,14 +1,19 @@
 resources:
   pipelines:
     - pipeline: buildPipeline
-      source: 'docker-ci'  # CI pipeline
+      source: 'docker-ci'  # CI pipeline name
       trigger:
         branches:
           include:
             - main
+
+trigger: none  # Prevents this pipeline from running on code push
+
 stages:
 - stage: DeployDev
   displayName: Deploy to Dev
+  dependsOn: []
+  condition: succeeded()
   jobs:
   - deployment: HelmDeployDev
     environment: dev
@@ -38,10 +43,7 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: HelmDeployTest
-    environment:
-      name: test
-      resourceName: test
-      action: Deploy
+    environment: test
     pool:
       vmImage: 'ubuntu-latest'
     strategy:
@@ -50,21 +52,25 @@ stages:
           steps:
           - task: HelmDeploy@0
             inputs:
-              # similar as above, with test-specific values and namespace
+              connectionType: 'Azure Resource Manager'
+              azureSubscription: 'aks-dev-connect'
+              azureResourceGroup: 'datahub-dev_group'
+              kubernetesCluster: 'datahub-dev-lt (datahub-dev_group)'
               namespace: 'test'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'charts/your-app'
+              releaseName: 'az-node-test'
               overrideValues: '-f .azure-pipelines/helm-values/test-values.yaml'
+              install: true
 
 - stage: DeployProd
   displayName: Deploy to Prod
   dependsOn: DeployTest
   condition: succeeded()
-  approval:
-    approvals:
-      - reviewers:
-        - <Azure DevOps user email or group>
   jobs:
   - deployment: HelmDeployProd
-    environment: prod
+    environment: prod  # Configure approval in Azure DevOps UI
     pool:
       vmImage: 'ubuntu-latest'
     strategy:
@@ -73,5 +79,14 @@ stages:
           steps:
           - task: HelmDeploy@0
             inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscription: 'aks-dev-connect'
+              azureResourceGroup: 'datahub-dev_group'
+              kubernetesCluster: 'datahub-dev-lt (datahub-dev_group)'
               namespace: 'prod'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'charts/your-app'
+              releaseName: 'az-node-prod'
               overrideValues: '-f .azure-pipelines/helm-values/prod-values.yaml'
+              install: true
