@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: az-nodejs-app
+  namespace: test
+  labels:
+    app: az-nodejs-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: az-nodejs-app
+  template:
+    metadata:
+      labels:
+        app: az-nodejs-app
+    spec:
+      containers:
+      - name: az-nodejs-app
+        image: placeholder.azurecr.io/az-nodejs-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "testing"
