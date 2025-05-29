@@ -23,6 +23,7 @@ stages:
       runOnce:
         deploy:
           steps:
+          - checkout: self
           - task: HelmInstaller@1
             displayName: 'Install Helm'
             inputs:
@@ -53,6 +54,7 @@ stages:
       runOnce:
         deploy:
           steps:
+          - checkout: self
           - task: HelmInstaller@1
             displayName: 'Install Helm'
             inputs:
@@ -76,13 +78,14 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: HelmDeployProd
-    environment: prod    
+    environment: prod
     pool:
       name: default
     strategy:
       runOnce:
         deploy:
           steps:
+          - checkout: self
           - task: HelmInstaller@1
             displayName: 'Install Helm'
             inputs:
