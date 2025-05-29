@@ -1,13 +1,13 @@
 resources:
   pipelines:
     - pipeline: buildPipeline
-      source: 'docker-ci'  # CI pipeline name
+      source: 'docker-ci'
       trigger:
         branches:
           include:
             - main
 
-trigger: none  # Prevents this pipeline from running on code push
+trigger: none
 
 stages:
 - stage: DeployDev
@@ -25,14 +25,12 @@ stages:
           steps:
           - task: HelmDeploy@0
             inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscription: 'aks-dev-connect'
-              azureResourceGroup: 'datahub-dev_group'
-              kubernetesCluster: 'datahub-dev-lt (datahub-dev_group)'
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'aks-dev-connect'
               namespace: 'dev'
               command: 'upgrade'
               chartType: 'FilePath'
-              chartPath: 'charts/nodejs-app'
+              chartPath: 'charts/your-app'
               releaseName: 'az-node-dev'
               overrideValues: '-f .azure-pipelines/helm-values/dev-values.yaml'
               install: true
@@ -52,14 +50,12 @@ stages:
           steps:
           - task: HelmDeploy@0
             inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscription: 'aks-dev-connect'
-              azureResourceGroup: 'datahub-dev_group'
-              kubernetesCluster: 'datahub-dev-lt (datahub-dev_group)'
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'aks-dev-connect'
               namespace: 'test'
               command: 'upgrade'
               chartType: 'FilePath'
-              chartPath: 'charts/nodejs-app'
+              chartPath: 'charts/your-app'
               releaseName: 'az-node-test'
               overrideValues: '-f .azure-pipelines/helm-values/test-values.yaml'
               install: true
@@ -70,7 +66,7 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: HelmDeployProd
-    environment: prod  # Configure approval in Azure DevOps UI
+    environment: prod  # configure approvals in the UI under Pipelines → Environments → prod
     pool:
       vmImage: 'ubuntu-latest'
     strategy:
@@ -79,14 +75,12 @@ stages:
           steps:
           - task: HelmDeploy@0
             inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscription: 'aks-dev-connect'
-              azureResourceGroup: 'datahub-dev_group'
-              kubernetesCluster: 'datahub-dev-lt (datahub-dev_group)'
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'aks-dev-connect'
               namespace: 'prod'
               command: 'upgrade'
               chartType: 'FilePath'
-              chartPath: 'charts/nodejs-app'
+              chartPath: 'charts/your-app'
               releaseName: 'az-node-prod'
               overrideValues: '-f .azure-pipelines/helm-values/prod-values.yaml'
               install: true
