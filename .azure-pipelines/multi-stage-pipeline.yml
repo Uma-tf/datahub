@@ -40,6 +40,13 @@ stages:
               releaseName: 'az-node-dev'
               install: true
               valueFile: '.azure-pipelines/helm-values/dev-values.yaml'
+              arguments: '--atomic --timeout 5m'
+          - script: |
+              echo "===== Pod Status ====="
+              kubectl get pods -n dev -o wide
+              echo "===== Events ====="
+              kubectl get events -n dev --sort-by='.lastTimestamp' | tail -20
+            displayName: 'Check pod status in Dev'
 
 - stage: DeployTest
   displayName: Deploy to Test
@@ -71,6 +78,13 @@ stages:
               releaseName: 'az-node-test'
               install: true
               valueFile: '.azure-pipelines/helm-values/test-values.yaml'
+              arguments: '--atomic --timeout 5m'
+          - script: |
+              echo "===== Pod Status ====="
+              kubectl get pods -n test -o wide
+              echo "===== Events ====="
+              kubectl get events -n test --sort-by='.lastTimestamp' | tail -20
+            displayName: 'Check pod status in Test'
 
 - stage: DeployProd
   displayName: Deploy to Prod
@@ -102,3 +116,10 @@ stages:
               releaseName: 'az-node-prod'
               install: true
               valueFile: '.azure-pipelines/helm-values/prod-values.yaml'
+              arguments: '--atomic --timeout 5m'
+          - script: |
+              echo "===== Pod Status ====="
+              kubectl get pods -n prod -o wide
+              echo "===== Events ====="
+              kubectl get events -n prod --sort-by='.lastTimestamp' | tail -20
+            displayName: 'Check pod status in Prod'
