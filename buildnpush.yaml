@@ -6,7 +6,7 @@ trigger:
 variables:
   imageName: az-nodejs-app
   containerRegistry: datahubtore.azurecr.io   # ACR login server
-  dockerRegistryServiceConnection: acr-connect  # service connection name
+  dockerRegistryServiceConnection: acr_connect  # service connection name
 
 stages:
 - stage: BuildAndPush
