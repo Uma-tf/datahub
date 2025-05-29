@@ -1,0 +1,5 @@
+replicaCount: 3
+image:
+  repository: datahubtore.azurecr.io/az-nodejs-app
+  tag: latest
+namespace: prod
