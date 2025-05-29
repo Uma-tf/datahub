@@ -1,89 +1,71 @@
-# .azure-pipelines/multi-stage-pipeline.yml
-trigger:
-  branches:
-    include:
-      - main
-
-variables:
-  imageName: 'acr_connect'
-  dockerRegistryServiceConnection: 'AzureContainerRegistryConnection'
-  acrName: 'datahubtore'
-  kubernetesServiceConnection: 'aks-dev-connect'
-  namespace: 'default'
+trigger: none
 
 stages:
-
-- stage: Build
-  displayName: Build and Push
-  jobs:
-  - job: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: Docker@2
-      displayName: Build and Push Image
-      inputs:
-        containerRegistry: $(dockerRegistryServiceConnection)
-        repository: $(imageName)
-        command: buildAndPush
-        Dockerfile: '**/Dockerfile'
-        tags: '$(Build.BuildId)'
-
 - stage: DeployDev
   displayName: Deploy to Dev
-  dependsOn: Build
   jobs:
-  - deployment: DeployDev
+  - deployment: HelmDeployDev
     environment: dev
+    pool:
+      vmImage: 'ubuntu-latest'
     strategy:
       runOnce:
         deploy:
           steps:
-          - task: KubernetesManifest@1
-            displayName: Deploy to Dev
+          - task: HelmDeploy@0
             inputs:
-              kubernetesServiceConnection: $(kubernetesServiceConnection)
-              namespace: $(namespace)
-              manifests: manifests/dev/deployment.yaml
-              containers: |
-                $(acrName).azurecr.io/$(imageName):$(Build.BuildId)
+              connectionType: 'Azure Resource Manager'
+              azureSubscription: 'aks-dev-connect'
+              azureResourceGroup: 'datahub-dev_group'
+              kubernetesCluster: 'datahub-dev-lt (datahub-dev_group)'
+              namespace: 'dev'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'charts/your-app'
+              releaseName: 'az-node-dev'
+              overrideValues: '-f .azure-pipelines/helm-values/dev-values.yaml'
+              install: true
 
 - stage: DeployTest
   displayName: Deploy to Test
   dependsOn: DeployDev
   condition: succeeded()
   jobs:
-  - deployment: DeployTest
-    environment: test
+  - deployment: HelmDeployTest
+    environment:
+      name: test
+      resourceName: test
+      action: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
     strategy:
       runOnce:
         deploy:
           steps:
-          - task: KubernetesManifest@1
-            displayName: Deploy to Test
+          - task: HelmDeploy@0
             inputs:
-              kubernetesServiceConnection: $(kubernetesServiceConnection)
-              namespace: $(namespace)
-              manifests: manifests/test/deployment.yaml
-              containers: |
-                $(acrName).azurecr.io/$(imageName):$(Build.BuildId)
+              # similar as above, with test-specific values and namespace
+              namespace: 'test'
+              overrideValues: '-f .azure-pipelines/helm-values/test-values.yaml'
 
 - stage: DeployProd
   displayName: Deploy to Prod
   dependsOn: DeployTest
   condition: succeeded()
+  approval:
+    approvals:
+      - reviewers:
+        - <Azure DevOps user email or group>
   jobs:
-  - deployment: DeployProd
+  - deployment: HelmDeployProd
     environment: prod
+    pool:
+      vmImage: 'ubuntu-latest'
     strategy:
       runOnce:
         deploy:
           steps:
-          - task: KubernetesManifest@1
-            displayName: Deploy to Prod
+          - task: HelmDeploy@0
             inputs:
-              kubernetesServiceConnection: $(kubernetesServiceConnection)
-              namespace: $(namespace)
-              manifests: manifests/prod/deployment.yaml
-              containers: |
-                $(acrName).azurecr.io/$(imageName):$(Build.BuildId)
+              namespace: 'prod'
+              overrideValues: '-f .azure-pipelines/helm-values/prod-values.yaml'
