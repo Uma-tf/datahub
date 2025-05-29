@@ -6,7 +6,6 @@ trigger:
 variables:
   imageName: az-nodejs-app
   containerRegistry: datahubtore   # ACR login server
-  dockerRegistryServiceConnection: acr_connect  # service connection name
 
 stages:
 - stage: BuildAndPush
@@ -21,12 +20,12 @@ stages:
     - task: Checkout@1
 
     - task: Docker@2
-      displayName: Build and Push Docker Image
+      displayName: 'Build and Push Docker Image'
       inputs:
-        containerRegistry: $(dockerRegistryServiceConnection)
-        repository: $(containerRegistry)/$(imageName)
+        repository: $(imageName
         command: buildAndPush
-        Dockerfile: Dockerfile
+        Dockerfile: **/Dockerfile
+        containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           latest
           $(Build.BuildId)
