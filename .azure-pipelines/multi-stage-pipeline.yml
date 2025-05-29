@@ -18,7 +18,7 @@ stages:
   - deployment: HelmDeployDev
     environment: dev
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'Default'
     strategy:
       runOnce:
         deploy:
