@@ -1,5 +1,11 @@
-trigger: none
-
+resources:
+  pipelines:
+    - pipeline: buildPipeline
+      source: 'docker-ci'  # CI pipeline
+      trigger:
+        branches:
+          include:
+            - main
 stages:
 - stage: DeployDev
   displayName: Deploy to Dev
