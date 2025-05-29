@@ -5,7 +5,7 @@ trigger:
 
 variables:
   imageName: az-nodejs-app
-  dockerRegistryServiceConnection: acr_connect  #service connection name
+  dockerRegistryServiceConnection: acr_connect  # service connection name
 
 stages:
 - stage: BuildAndPush
@@ -14,7 +14,7 @@ stages:
   - job: Build
     displayName: Build and Push
     pool:
-      name: Default  #agent pool
+      name: Default  # agent pool
 
     steps:
     - checkout: self  
@@ -29,5 +29,30 @@ stages:
         tags: |
           latest
           $(Build.BuildId)
+
+    # Publish test results
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'test-results/junit.xml'
+        failTaskOnFailedTests: true
+
+    # Archive project files
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+        replaceExistingArchive: true
+
+    # Publish archived artifact
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/app.zip'
+        ArtifactName: 'app-archive'
+        publishLocation: 'Container'
+
 
 
