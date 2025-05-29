@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: datahubtore.azurecr.io/az-nodejs-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+containerPort: 3000
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
