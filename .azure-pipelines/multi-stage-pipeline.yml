@@ -35,7 +35,7 @@ stages:
               namespace: 'dev'
               command: 'upgrade'
               chartType: 'FilePath'
-              chartPath: 'charts/your-app'
+              chartPath: 'charts/nodejs-app'
               releaseName: 'az-node-dev'
               install: true
               valueFile: '.azure-pipelines/helm-values/dev-values.yaml'
@@ -65,7 +65,7 @@ stages:
               namespace: 'test'
               command: 'upgrade'
               chartType: 'FilePath'
-              chartPath: 'charts/your-app'
+              chartPath: 'charts/nodejs-app'
               releaseName: 'az-node-test'
               install: true
               valueFile: '.azure-pipelines/helm-values/test-values.yaml'
@@ -95,7 +95,7 @@ stages:
               namespace: 'prod'
               command: 'upgrade'
               chartType: 'FilePath'
-              chartPath: 'charts/your-app'
+              chartPath: 'charts/nodejs-app'
               releaseName: 'az-node-prod'
               install: true
               valueFile: '.azure-pipelines/helm-values/prod-values.yaml'
