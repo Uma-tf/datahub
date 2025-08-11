@@ -1,0 +1,125 @@
+resources:
+  pipelines:
+    - pipeline: buildPipeline
+      source: 'docker-ci'
+      trigger:
+        branches:
+          include:
+            - main
+
+trigger: none
+
+stages:
+- stage: DeployDev
+  displayName: Deploy to Dev
+  dependsOn: []
+  condition: succeeded()
+  jobs:
+  - deployment: HelmDeployDev
+    environment: dev
+    pool:
+      name: default
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: HelmInstaller@1
+            displayName: 'Install Helm'
+            inputs:
+              helmVersionToInstall: 'latest'
+          - task: HelmDeploy@0
+            displayName: 'Deploy via Helm to Dev'
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'aks-dev-connect'
+              namespace: 'dev'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'charts/nodejs-app'
+              releaseName: 'az-node-dev'
+              install: true
+              valueFile: '.azure-pipelines/helm-values/dev-values.yaml'
+              arguments: '--atomic --timeout 5m'
+          - script: |
+              echo "===== Pod Status ====="
+              kubectl get pods -n dev -o wide
+              echo "===== Events ====="
+              kubectl get events -n dev --sort-by='.lastTimestamp' | tail -20
+            displayName: 'Check pod status in Dev'
+
+- stage: DeployTest
+  displayName: Deploy to Test
+  dependsOn: DeployDev
+  condition: succeeded()
+  jobs:
+  - deployment: HelmDeployTest
+    environment: test
+    pool:
+      name: default
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: HelmInstaller@1
+            displayName: 'Install Helm'
+            inputs:
+              helmVersionToInstall: 'latest'
+          - task: HelmDeploy@0
+            displayName: 'Deploy via Helm to Test'
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'aks-dev-connect'
+              namespace: 'test'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'charts/nodejs-app'
+              releaseName: 'az-node-test'
+              install: true
+              valueFile: '.azure-pipelines/helm-values/test-values.yaml'
+              arguments: '--atomic --timeout 5m'
+          - script: |
+              echo "===== Pod Status ====="
+              kubectl get pods -n test -o wide
+              echo "===== Events ====="
+              kubectl get events -n test --sort-by='.lastTimestamp' | tail -20
+            displayName: 'Check pod status in Test'
+
+- stage: DeployProd
+  displayName: Deploy to Prod
+  dependsOn: DeployTest
+  condition: succeeded()
+  jobs:
+  - deployment: HelmDeployProd
+    environment: prod
+    pool:
+      name: default
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: HelmInstaller@1
+            displayName: 'Install Helm'
+            inputs:
+              helmVersionToInstall: 'latest'
+          - task: HelmDeploy@0
+            displayName: 'Deploy via Helm to Prod'
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'aks-dev-connect'
+              namespace: 'prod'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'charts/nodejs-app'
+              releaseName: 'az-node-prod'
+              install: true
+              valueFile: '.azure-pipelines/helm-values/prod-values.yaml'
+              arguments: '--atomic --timeout 5m'
+          - script: |
+              echo "===== Pod Status ====="
+              kubectl get pods -n prod -o wide
+              echo "===== Events ====="
+              kubectl get events -n prod --sort-by='.lastTimestamp' | tail -20
+            displayName: 'Check pod status in Prod'
